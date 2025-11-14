@@ -408,6 +408,7 @@ export class YouTubePlayer {
      * Locks the content to landscape orientation using CSS (no page reload)
      */
     private lockContentToLandscape() {
+        document.documentElement.classList.add("landscape-locked");
         document.body.classList.add("landscape-locked");
     }
 
@@ -415,6 +416,7 @@ export class YouTubePlayer {
      * Unlocks the content orientation (returns to normal/portrait)
      */
     private unlockContentOrientation() {
+        document.documentElement.classList.remove("landscape-locked");
         document.body.classList.remove("landscape-locked");
     }
     // private setupCustomPlayButton() {
