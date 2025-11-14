@@ -1,7 +1,7 @@
 {
-  "name": "assessment-survey-js",
+  "name": "cl-parents-spa",
   "version": "0.0.1",
-  "description": "typescript implementation of the assessment / survey",
+  "description": "Curious Learning Parents SPA",
   "main": "bundle.js",
   "scripts": {
     "webpack": "webpack && live-server",
@@ -15,12 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/curiouslearning/assessment-survey-js.git"
+    "url": "https://github.com/curiouslearning/cl-parents-spa.git"
   },
   "author": "curious learning",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/curiouslearning/assessment-survey-js/issues"
+    "url": "https://github.com/curiouslearning/cl-parents-spa/issues"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
