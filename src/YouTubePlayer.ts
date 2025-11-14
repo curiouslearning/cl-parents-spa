@@ -221,7 +221,8 @@ export class YouTubePlayer {
     private setupOverlayClick() {
         this.overlay.addEventListener("click", () => {
             if (this.player) {
-                // this.enforceOrientationMode("landscape")
+                // Lock orientation to landscape when playback starts
+                this.enforceOrientationMode("landscape");
                 this.player.seekTo(0);
                 this.player.playVideo();
 
@@ -267,10 +268,12 @@ export class YouTubePlayer {
             console.log("video ended")
             this.overlay.classList.add("show");
         } else if (event.data === YT.PlayerState.PLAYING) {
+            // Lock orientation to landscape when video starts playing
+            this.enforceOrientationMode("landscape");
+            
             const iframeEl = document.getElementById('youtube-player');
 
             if (iframeEl && typeof iframeEl.requestFullscreen === 'function') {
-                // this.enforceOrientationMode("landscape");
                 this.openCustomFullscreen();
             }
             this.overlay.classList.remove("show");
