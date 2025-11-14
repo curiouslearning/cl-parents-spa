@@ -17,6 +17,43 @@ body {
   padding: 20px;
   overflow: hidden !important;
   overscroll-behavior: none;
+  transition: transform 0.3s ease;
+}
+
+/* Lock content to landscape orientation using CSS transform */
+/* Only rotate when device is in portrait orientation */
+@media (orientation: portrait) {
+  body.landscape-locked {
+    /* Rotate the entire body 90 degrees to force landscape view */
+    transform: rotate(90deg);
+    transform-origin: center center;
+    width: 100vh;
+    height: 100vw;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-left: -50vh;
+    margin-top: -50vw;
+  }
+
+  /* Ensure fullscreen mode works correctly with landscape lock */
+  body.landscape-locked .fullscreen-mode {
+    width: 100vh;
+    height: 100vw;
+  }
+}
+
+/* When already in landscape, just ensure full width/height */
+@media (orientation: landscape) {
+  body.landscape-locked {
+    width: 100vw;
+    height: 100vh;
+  }
+
+  body.landscape-locked .fullscreen-mode {
+    width: 100vw;
+    height: 100vh;
+  }
 }
 /* ----------------------------------
    BASE STYLES (DEFAULT: MEDIUM DEVICES)
