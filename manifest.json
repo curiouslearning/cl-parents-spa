@@ -1,0 +1,18 @@
+{
+  "name": "Assessment and Survey app",
+  "short_name": "Parent Welcome Page",
+  "icons": [
+    {
+      "src": "",
+      "sizes": "256x256",
+      "purpose": "any",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "incognito": "split",
+  "background_color": "#fff",
+  "theme_color": ""
+}
