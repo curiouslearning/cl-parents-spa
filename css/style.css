@@ -339,6 +339,47 @@ iframe {
   border-radius: 8px;
   font-size: 16px;
 }
+
+/* Close button - just the cancel image, always visible in top left */
+.orange-close-btn,
+#orange-close-btn {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 10001; /* Higher than everything else */
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: auto;
+  height: auto;
+  display: block !important; /* Always visible */
+  visibility: visible !important; /* Always visible */
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.orange-close-btn .cancel-icon,
+#orange-close-btn .cancel-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none; /* Prevent image from blocking clicks */
+}
+
+.orange-close-btn:hover,
+#orange-close-btn:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
+.orange-close-btn:active,
+#orange-close-btn:active {
+  transform: scale(0.95);
+  opacity: 0.6;
+}
 .play-btn {
   font-size: 48px;
   border: none;
