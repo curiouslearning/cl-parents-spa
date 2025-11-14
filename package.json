@@ -5,7 +5,8 @@
   "main": "bundle.js",
   "scripts": {
     "webpack": "webpack && live-server",
-    "build": "webpack",
+    "build": "webpack --mode production",
+    "build:dev": "webpack",
     "test": "jest",
     "dev": "webpack && npx workbox injectManifest && live-server --no-browser",
     "tsc-build": "tsc && tsc-bundle tsconfig.json --exportAs Bundle --entryPoint App --outFile bundle.js",
@@ -36,6 +37,7 @@
     "ts-node": "^10.9.2",
     "typescript": "~4.8.3",
     "typescript-bundle": "^1.0.18",
+    "terser-webpack-plugin": "^5.3.10",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0"
   },
