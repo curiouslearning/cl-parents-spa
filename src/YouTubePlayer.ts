@@ -4,6 +4,12 @@ declare global {
     interface Window {
         onYouTubeIframeAPIReady: () => void;
         YT: typeof YT;
+        Android?: {
+            postMessage?: (message: string) => void;
+            setContainerAppOrientation?: (orientation: string) => void;
+            closeWebView?: () => void;
+            hideCloseButton?: () => void;
+        };
     }
 
     namespace YT {
@@ -36,6 +42,7 @@ export class YouTubePlayer {
     private videoId: string;
     private blockerElements: HTMLElement[] = [];
     private wrapper: HTMLElement;
+    private closeButton: HTMLElement | null = null;
 
     constructor(videoId: string) {
         this.videoId = videoId;
@@ -46,6 +53,12 @@ export class YouTubePlayer {
         const wrapper = document.getElementById("video-wrapper");
         if (!wrapper) throw new Error("Video wrapper not found");
         this.wrapper = wrapper;
+
+        // Hide Android app's orange button if it exists
+        this.hideAndroidCloseButton();
+
+        // Create the orange close button (always visible)
+        this.createCloseButton();
 
         this.createIframe();
         this.createInteractionBlockers();
@@ -263,22 +276,65 @@ export class YouTubePlayer {
             this.overlay.classList.remove("show");
         }
     }
-    private openCustomFullscreen() {
-        this.wrapper.classList.add("fullscreen-mode");
-        
-        // Update blockers for fullscreen mode (they scale automatically with CSS)
-        // Use a small delay to ensure DOM is updated
-        setTimeout(() => {
-            this.updateInteractionBlockers();
-        }, 100);
+    /**
+     * Hides the Android app's orange close button if it exists
+     */
+    private hideAndroidCloseButton() {
+        // Try to hide Android app's button via CSS
+        // Exclude our orange-close-btn by using :not() selector
+        const style = document.createElement("style");
+        style.textContent = `
+            /* Hide Android app's orange button - but NOT our orange-close-btn */
+            [data-android-close-button],
+            .android-close-button,
+            button[aria-label*="close" i]:not(#orange-close-btn),
+            button[aria-label*="Close" i]:not(#orange-close-btn) {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            
+            /* Ensure our orange close button is always visible */
+            #orange-close-btn {
+                display: flex !important;
+                visibility: visible !important;
+            }
+        `;
+        document.head.appendChild(style);
 
-        const closeBtn = document.createElement("button");
-        closeBtn.textContent = "✕ Close";
-        closeBtn.className = "close-btn";
-        closeBtn.onclick = async () => {
+        // Also try to send message to Android app to hide its button
+        this.sendMessageToAndroid("hideCloseButton");
+    }
+
+    /**
+     * Sets up the orange close button from HTML
+     */
+    private createCloseButton() {
+        const closeBtn = document.getElementById("orange-close-btn");
+        if (!closeBtn) {
+            console.warn("Orange close button not found in HTML");
+            return;
+        }
+
+        this.closeButton = closeBtn as HTMLElement;
+        
+        // Set up click handler
+        closeBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.handleCloseButtonClick();
+        };
+    }
+
+    /**
+     * Handles close button click - closes fullscreen if open, otherwise closes webview
+     */
+    private handleCloseButtonClick() {
+        const isFullscreen = this.wrapper.classList.contains("fullscreen-mode");
+
+        if (isFullscreen) {
+            // Close fullscreen video
             this.wrapper.classList.remove("fullscreen-mode");
             this.enforceOrientationMode("portrait");
-            closeBtn.remove();
             
             // Update blockers back to normal mode
             setTimeout(() => {
@@ -287,9 +343,62 @@ export class YouTubePlayer {
             
             // @ts-ignore
             if (this.player) this.player.pauseVideo();
-        };
+        } else {
+            // Send message to Android app to close webview
+            this.sendMessageToAndroid("closeWebView");
+        }
+    }
 
-        document.body.appendChild(closeBtn);
+    /**
+     * Sends a message to the parent Android app
+     */
+    private sendMessageToAndroid(action: string, data?: any) {
+        try {
+            // Method 1: Direct Android interface
+            if (window.Android) {
+                if (action === "closeWebView" && typeof window.Android.closeWebView === "function") {
+                    window.Android.closeWebView();
+                    return;
+                }
+                if (action === "hideCloseButton" && typeof window.Android.hideCloseButton === "function") {
+                    window.Android.hideCloseButton();
+                    return;
+                }
+                if (typeof window.Android.postMessage === "function") {
+                    window.Android.postMessage(JSON.stringify({ action, data }));
+                    return;
+                }
+            }
+
+            // Method 2: postMessage to parent window (for iframe/webview)
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ action, data, source: "youtube-player" }, "*");
+                return;
+            }
+
+            // Method 3: Try WebView interface (common Android WebView pattern)
+            // @ts-ignore
+            if (window.AndroidWebView && typeof window.AndroidWebView.postMessage === "function") {
+                // @ts-ignore
+                window.AndroidWebView.postMessage(JSON.stringify({ action, data }));
+                return;
+            }
+
+            // Fallback: log for debugging
+            console.log(`Android message (${action}):`, data);
+        } catch (error) {
+            console.error("Error sending message to Android app:", error);
+        }
+    }
+
+    private openCustomFullscreen() {
+        this.wrapper.classList.add("fullscreen-mode");
+        
+        // Update blockers for fullscreen mode (they scale automatically with CSS)
+        // Use a small delay to ensure DOM is updated
+        setTimeout(() => {
+            this.updateInteractionBlockers();
+        }, 100);
     }
     private enforceOrientationMode(type: String) {
         // Attempt to enforce landscape mode through Android bridge call
@@ -329,6 +438,7 @@ export class YouTubePlayer {
         this.videoId = newVideoId;
         this.createIframe();
         this.updateInteractionBlockers(); // Recreate blockers for new iframe
+        // Close button persists, no need to recreate
         this.initializeYouTubeAPI();
     }
 }
