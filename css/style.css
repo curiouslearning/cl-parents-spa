@@ -362,8 +362,8 @@ iframe {
 
 .orange-close-btn .cancel-icon,
 #orange-close-btn .cancel-icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
   display: block;
   pointer-events: none; /* Prevent image from blocking clicks */
