@@ -6,9 +6,7 @@ export class App {
     }
 
     public async initialize() {
-        // document.addEventListener("DOMContentLoaded", () => {
-        //     (window as any).lucide.createIcons(); // render the icons
-        // });
+
 
         document.addEventListener("DOMContentLoaded", () => {
             // Initialize YouTube player with the video ID you want to load

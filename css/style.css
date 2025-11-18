@@ -79,7 +79,9 @@ body {
     position: fixed;
     /* Calculate exact centering for rotated content */
     top: calc((100vh - 100vw) / 2); /* Center vertically */
-    left: calc((100vw - 100vh) / 2); /* Center horizontally (will be negative) */
+    left: calc(
+      (100vw - 100vh) / 2
+    ); /* Center horizontally (will be negative) */
     margin: 0;
     background: black;
     z-index: 9999;
@@ -107,7 +109,7 @@ body {
     left: 12px;
     z-index: 10001;
   }
-  
+
   /* Close button in fullscreen mode - counter-rotate to stay upright */
   body.landscape-locked .fullscreen-mode #orange-close-btn {
     transform: rotate(-90deg); /* Counter-rotate to keep button upright */
@@ -272,10 +274,12 @@ body {
 }
 
 .video-title h1 {
-  font-size: 2.4rem;
-  font-weight: 1000;
-  color: #222;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
   margin: 10;
+  font-family:
+    "Comic Sans MS", "Comic Sans", "Arial Rounded MT Bold", sans-serif;
 }
 i[data-lucide] {
   width: 4rem;
@@ -295,11 +299,13 @@ i[data-lucide] {
 }
 
 h1 {
-  color: #333;
   text-align: center;
   margin-bottom: 30px;
-  font-size: 2.5em;
+  font-size: 1.4em;
   font-weight: 700;
+  color: #fff;
+  font-family:
+    "Comic Sans MS", "Comic Sans", "Arial Rounded MT Bold", sans-serif;
 }
 
 .video-wrapper {
@@ -468,7 +474,9 @@ iframe {
   display: block !important; /* Always visible */
   visibility: visible !important; /* Always visible */
   cursor: pointer;
-  transition: transform 0.1s ease, opacity 0.2s ease;
+  transition:
+    transform 0.1s ease,
+    opacity 0.2s ease;
   user-select: none;
   -webkit-user-select: none;
 }
