@@ -124,7 +124,7 @@ export class YouTubePlayer {
             top: "0",
             left: "0",
             width: "60%", // Covers top-left area where channel name appears
-            height: "20%", // Covers top portion
+            height: "32%", // Covers top portion
         });
 
         // Top right blocker (share buttons area)
@@ -166,14 +166,15 @@ export class YouTubePlayer {
     private createBlocker(className: string, styles: { [key: string]: string }): HTMLElement {
         const blocker = document.createElement("div");
         blocker.className = className;
-        
+
         // Base styles for all blockers
         Object.assign(blocker.style, {
             position: "absolute",
             zIndex: "1000", // High z-index to be above iframe
-            backgroundColor: "transparent", // Transparent but captures clicks
+            backgroundColor: "red", // Transparent but captures clicks
             cursor: "default",
             pointerEvents: "auto", // Capture pointer events
+            // border: "2px solid red", // Debug outline to visualize blocker positions
         });
 
         // Apply custom positioning styles
@@ -221,7 +222,8 @@ export class YouTubePlayer {
     private setupOverlayClick() {
         this.overlay.addEventListener("click", () => {
             if (this.player) {
-                // this.enforceOrientationMode("landscape")
+                // Lock content orientation to landscape using CSS (no reload)
+                this.lockContentToLandscape();
                 this.player.seekTo(0);
                 this.player.playVideo();
 
@@ -267,10 +269,12 @@ export class YouTubePlayer {
             console.log("video ended")
             this.overlay.classList.add("show");
         } else if (event.data === YT.PlayerState.PLAYING) {
+            // Lock content orientation to landscape using CSS (no reload)
+            this.lockContentToLandscape();
+
             const iframeEl = document.getElementById('youtube-player');
 
             if (iframeEl && typeof iframeEl.requestFullscreen === 'function') {
-                // this.enforceOrientationMode("landscape");
                 this.openCustomFullscreen();
             }
             this.overlay.classList.remove("show");
@@ -316,31 +320,33 @@ export class YouTubePlayer {
         }
 
         this.closeButton = closeBtn as HTMLElement;
-        
+
         // Set up click handler
         closeBtn.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            this.handleCloseButtonClick();
+            this.handleCloseButtonClick(closeBtn);
         };
     }
 
     /**
      * Handles close button click - closes fullscreen if open, otherwise closes webview
      */
-    private handleCloseButtonClick() {
+    private handleCloseButtonClick(closeBtn: HTMLElement) {
         const isFullscreen = this.wrapper.classList.contains("fullscreen-mode");
 
         if (isFullscreen) {
             // Close fullscreen video
             this.wrapper.classList.remove("fullscreen-mode");
-            this.enforceOrientationMode("portrait");
-            
+            // Unlock content orientation (return to portrait)
+
+            this.unlockContentOrientation();
+            closeBtn.style.left = "12px";
             // Update blockers back to normal mode
             setTimeout(() => {
                 this.updateInteractionBlockers();
             }, 100);
-            
+
             // @ts-ignore
             if (this.player) this.player.pauseVideo();
         } else {
@@ -393,21 +399,28 @@ export class YouTubePlayer {
 
     private openCustomFullscreen() {
         this.wrapper.classList.add("fullscreen-mode");
-        
+        let orangePlayButton = document.getElementById("orange-close-btn");
+        orangePlayButton.style.left = "93%";
         // Update blockers for fullscreen mode (they scale automatically with CSS)
         // Use a small delay to ensure DOM is updated
         setTimeout(() => {
             this.updateInteractionBlockers();
         }, 100);
     }
-    private enforceOrientationMode(type: String) {
-        // Attempt to enforce landscape mode through Android bridge call
-        // @ts-ignore
-        if (window.Android && typeof window.Android.setContainerAppOrientation === "function") {
-            //@ts-ignore
-            window.Android.setContainerAppOrientation(type);
+    /**
+     * Locks the content to landscape orientation using CSS (no page reload)
+     */
+    private lockContentToLandscape() {
+        document.documentElement.classList.add("landscape-locked");
+        document.body.classList.add("landscape-locked");
+    }
 
-        }
+    /**
+     * Unlocks the content orientation (returns to normal/portrait)
+     */
+    private unlockContentOrientation() {
+        document.documentElement.classList.remove("landscape-locked");
+        document.body.classList.remove("landscape-locked");
     }
     // private setupCustomPlayButton() {
     //     const playBtn = document.getElementById("custom-play-btn");

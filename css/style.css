@@ -17,6 +17,121 @@ body {
   padding: 20px;
   overflow: hidden !important;
   overscroll-behavior: none;
+  transition: transform 0.3s ease;
+}
+
+/* Lock content to landscape orientation by swapping viewport dimensions */
+/* Only apply when device is in portrait orientation */
+@media (orientation: portrait) {
+  html.landscape-locked {
+    width: 100vh; /* Swap: use height as width */
+    height: 100vw; /* Swap: use width as height */
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+
+  body.landscape-locked {
+    /* Body stays normal - no rotation needed */
+    /* Only the fullscreen-mode container will be rotated */
+  }
+
+  /* Rotate and align the fullscreen-mode container for landscape */
+  /* 
+   * GEOMETRY EXPLANATION:
+   * 
+   * Portrait viewport dimensions:
+   *   - Viewport width (vw) = smaller dimension (e.g., 375px)
+   *   - Viewport height (vh) = larger dimension (e.g., 812px)
+   * 
+   * Fullscreen container dimensions (swapped):
+   *   - Container width = 100vh (812px) - larger than viewport width!
+   *   - Container height = 100vw (375px) - smaller than viewport height
+   * 
+   * After 90deg rotation around center:
+   *   - The container rotates but its bounding box remains vh × vw
+   *   - We need to center this rotated content in the viewport (vw × vh)
+   * 
+   * CENTERING CALCULATION:
+   * 
+   * Horizontal centering (left):
+   *   - Viewport center = 50% of viewport width = 50vw
+   *   - Container center offset = half of container width = 50vh
+   *   - left = 50vw - 50vh = 50% - 50vh
+   *   - But since vh > vw, this gives negative value
+   *   - Correct: left = (vw - vh) / 2 = calc((100vw - 100vh) / 2)
+   * 
+   * Vertical centering (top):
+   *   - Viewport center = 50% of viewport height = 50vh
+   *   - Container center offset = half of container height = 50vw
+   *   - top = 50vh - 50vw = 50% - 50vw
+   *   - Since vh > vw, this is positive
+   *   - Correct: top = (vh - vw) / 2 = calc((100vh - 100vw) / 2)
+   */
+  body.landscape-locked .fullscreen-mode {
+    /* Swap dimensions to simulate landscape */
+    width: 100vh; /* Portrait height becomes landscape width */
+    height: 100vw; /* Portrait width becomes landscape height */
+    /* Rotate 90 degrees to landscape orientation */
+    transform: rotate(90deg);
+    transform-origin: center center;
+    position: fixed;
+    /* Calculate exact centering for rotated content */
+    top: calc((100vh - 100vw) / 2); /* Center vertically */
+    left: calc(
+      (100vw - 100vh) / 2
+    ); /* Center horizontally (will be negative) */
+    margin: 0;
+    background: black;
+    z-index: 9999;
+  }
+
+  /* Video wrapper inside fullscreen mode */
+  body.landscape-locked .fullscreen-mode .video-wrapper {
+    width: 100vh; /* Full container width */
+    height: 100vw; /* Full container height */
+    padding-bottom: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  body.landscape-locked .fullscreen-mode .video-wrapper iframe {
+    width: 100vh; /* Full landscape width */
+    height: 100vw; /* Full landscape height */
+  }
+
+  /* Close button - normal position when not in fullscreen */
+  body.landscape-locked #orange-close-btn {
+    /* Keep normal position when not in fullscreen */
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 10001;
+  }
+
+  /* Close button in fullscreen mode - counter-rotate to stay upright */
+  body.landscape-locked .fullscreen-mode #orange-close-btn {
+    transform: rotate(-90deg); /* Counter-rotate to keep button upright */
+    transform-origin: center center;
+    position: fixed;
+    top: 12px; /* Top of viewport */
+    left: calc(100vh - 52px); /* Right edge: use swapped width (100vh) */
+    z-index: 10002; /* Even higher to ensure visibility */
+  }
+}
+
+/* When already in landscape, just ensure full width/height */
+@media (orientation: landscape) {
+  body.landscape-locked {
+    width: 100vw;
+    height: 100vh;
+  }
+
+  body.landscape-locked .fullscreen-mode {
+    width: 100vw;
+    height: 100vh;
+  }
 }
 /* ----------------------------------
    BASE STYLES (DEFAULT: MEDIUM DEVICES)
@@ -159,10 +274,12 @@ body {
 }
 
 .video-title h1 {
-  font-size: 2.4rem;
-  font-weight: 1000;
-  color: #222;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
   margin: 10;
+  font-family:
+    "Comic Sans MS", "Comic Sans", "Arial Rounded MT Bold", sans-serif;
 }
 i[data-lucide] {
   width: 4rem;
@@ -182,11 +299,13 @@ i[data-lucide] {
 }
 
 h1 {
-  color: #333;
   text-align: center;
   margin-bottom: 30px;
-  font-size: 2.5em;
+  font-size: 1.4em;
   font-weight: 700;
+  color: #fff;
+  font-family:
+    "Comic Sans MS", "Comic Sans", "Arial Rounded MT Bold", sans-serif;
 }
 
 .video-wrapper {
@@ -355,7 +474,9 @@ iframe {
   display: block !important; /* Always visible */
   visibility: visible !important; /* Always visible */
   cursor: pointer;
-  transition: transform 0.1s ease, opacity 0.2s ease;
+  transition:
+    transform 0.1s ease,
+    opacity 0.2s ease;
   user-select: none;
   -webkit-user-select: none;
 }
