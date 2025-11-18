@@ -166,7 +166,7 @@ export class YouTubePlayer {
     private createBlocker(className: string, styles: { [key: string]: string }): HTMLElement {
         const blocker = document.createElement("div");
         blocker.className = className;
-        
+
         // Base styles for all blockers
         Object.assign(blocker.style, {
             position: "absolute",
@@ -270,7 +270,7 @@ export class YouTubePlayer {
         } else if (event.data === YT.PlayerState.PLAYING) {
             // Lock content orientation to landscape using CSS (no reload)
             this.lockContentToLandscape();
-            
+
             const iframeEl = document.getElementById('youtube-player');
 
             if (iframeEl && typeof iframeEl.requestFullscreen === 'function') {
@@ -319,32 +319,33 @@ export class YouTubePlayer {
         }
 
         this.closeButton = closeBtn as HTMLElement;
-        
+
         // Set up click handler
         closeBtn.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            this.handleCloseButtonClick();
+            this.handleCloseButtonClick(closeBtn);
         };
     }
 
     /**
      * Handles close button click - closes fullscreen if open, otherwise closes webview
      */
-    private handleCloseButtonClick() {
+    private handleCloseButtonClick(closeBtn: HTMLElement) {
         const isFullscreen = this.wrapper.classList.contains("fullscreen-mode");
 
         if (isFullscreen) {
             // Close fullscreen video
             this.wrapper.classList.remove("fullscreen-mode");
             // Unlock content orientation (return to portrait)
+
             this.unlockContentOrientation();
-            
+            closeBtn.style.left = "12px";
             // Update blockers back to normal mode
             setTimeout(() => {
                 this.updateInteractionBlockers();
             }, 100);
-            
+
             // @ts-ignore
             if (this.player) this.player.pauseVideo();
         } else {
@@ -397,7 +398,8 @@ export class YouTubePlayer {
 
     private openCustomFullscreen() {
         this.wrapper.classList.add("fullscreen-mode");
-        
+        let orangePlayButton = document.getElementById("orange-close-btn");
+        orangePlayButton.style.left = "93%";
         // Update blockers for fullscreen mode (they scale automatically with CSS)
         // Use a small delay to ensure DOM is updated
         setTimeout(() => {
