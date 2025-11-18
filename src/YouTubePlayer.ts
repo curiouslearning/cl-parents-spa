@@ -124,7 +124,7 @@ export class YouTubePlayer {
             top: "0",
             left: "0",
             width: "60%", // Covers top-left area where channel name appears
-            height: "20%", // Covers top portion
+            height: "32%", // Covers top portion
         });
 
         // Top right blocker (share buttons area)
@@ -171,9 +171,10 @@ export class YouTubePlayer {
         Object.assign(blocker.style, {
             position: "absolute",
             zIndex: "1000", // High z-index to be above iframe
-            backgroundColor: "transparent", // Transparent but captures clicks
+            backgroundColor: "red", // Transparent but captures clicks
             cursor: "default",
             pointerEvents: "auto", // Capture pointer events
+            // border: "2px solid red", // Debug outline to visualize blocker positions
         });
 
         // Apply custom positioning styles
