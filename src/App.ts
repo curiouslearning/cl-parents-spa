@@ -1,4 +1,4 @@
-import { YouTubePlayer } from "./YouTubePlayer";
+import { YouTubePlayer } from "./components/YouTubePlayer";
 import { getVideoIdFromUrl } from "./utils/paramUtils";
 
 export class App {

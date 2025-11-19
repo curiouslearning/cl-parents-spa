@@ -171,7 +171,7 @@ export class YouTubePlayer {
         Object.assign(blocker.style, {
             position: "absolute",
             zIndex: "1000", // High z-index to be above iframe
-            backgroundColor: "red", // Transparent but captures clicks
+            backgroundColor: "transparent", // Transparent but captures clicks
             cursor: "default",
             pointerEvents: "auto", // Capture pointer events
             // border: "2px solid red", // Debug outline to visualize blocker positions
