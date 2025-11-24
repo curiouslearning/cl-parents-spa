@@ -3,6 +3,7 @@
 declare global {
     interface Window {
         onYouTubeIframeAPIReady: () => void;
+        onAndroidBackPressed?: () => void;
         YT: typeof YT;
         Android?: {
             postMessage?: (message: string) => void;
@@ -64,6 +65,7 @@ export class YouTubePlayer {
         this.createInteractionBlockers();
         this.setupOverlayClick();
         this.initializeYouTubeAPI();
+        this.setupAndroidBackButton();
         // this.setupCustomPlayButton();
         this.fetchVideoTitle(videoId).then(title => {
             if (title) this.setVideoTitle(title);
@@ -339,9 +341,10 @@ export class YouTubePlayer {
             // Close fullscreen video
             this.wrapper.classList.remove("fullscreen-mode");
             // Unlock content orientation (return to portrait)
-
             this.unlockContentOrientation();
             closeBtn.style.left = "12px";
+            const icon = closeBtn.querySelector("img");
+            icon.src = "../../assets/images/cancel.png";
             // Update blockers back to normal mode
             setTimeout(() => {
                 this.updateInteractionBlockers();
@@ -353,6 +356,32 @@ export class YouTubePlayer {
             // Send message to Android app to close webview
             this.sendMessageToAndroid("closeWebView");
         }
+    }
+
+    /**
+     * Sets up Android back button handler
+     * Called by Android when user presses back button
+     */
+    private setupAndroidBackButton() {
+        // Store reference to this instance for the global function
+        const instance = this;
+
+        // Set up global function that Android will call
+        window.onAndroidBackPressed = () => {
+            const isFullscreen = instance.wrapper.classList.contains("fullscreen-mode");
+
+            // If in fullscreen, exit fullscreen mode using handleCloseButtonClick
+            if (isFullscreen) {
+                const closeBtn = document.getElementById("orange-close-btn");
+                if (closeBtn) {
+                    instance.handleCloseButtonClick(closeBtn as HTMLElement);
+                    return true; // Handled the back press
+                }
+            }
+
+            // Not in fullscreen, let Android handle it normally
+            return false;
+        };
     }
 
     /**
@@ -401,6 +430,8 @@ export class YouTubePlayer {
         this.wrapper.classList.add("fullscreen-mode");
         let orangePlayButton = document.getElementById("orange-close-btn");
         orangePlayButton.style.left = "93%";
+        const icon = orangePlayButton.querySelector("img");
+        icon.src = "../../assets/images/exit_fullscreen.png";
         // Update blockers for fullscreen mode (they scale automatically with CSS)
         // Use a small delay to ensure DOM is updated
         setTimeout(() => {
