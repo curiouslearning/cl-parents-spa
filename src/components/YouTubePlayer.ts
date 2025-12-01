@@ -352,7 +352,7 @@ export class YouTubePlayer {
             if (!icon) {
                 console.error("No <img> found for close button");
             } else {
-                icon.src = "/welcome-parent-video-page/assets/images/cancel.png";
+                icon.src = "/welcome_parent_video_app/assets/images/cancel.png";
             }
 
             // Update blockers back to normal mode
@@ -456,7 +456,7 @@ export class YouTubePlayer {
             console.error("No <img> found for orange-close-btn");
             return;
         }
-        icon.src = "/welcome-parent-video-page/assets/images/exit_fullscreen.png";
+        icon.src = "/welcome_parent_video_app/assets/images/exit_fullscreen.png";
 
         setTimeout(() => {
             this.updateInteractionBlockers();
