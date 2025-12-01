@@ -343,8 +343,18 @@ export class YouTubePlayer {
             // Unlock content orientation (return to portrait)
             this.unlockContentOrientation();
             closeBtn.style.left = "12px";
-            const icon = closeBtn.querySelector("img");
-            icon.src = "../../assets/images/cancel.png";
+            let icon: HTMLImageElement | null = null;
+            if (closeBtn instanceof HTMLImageElement) {
+                icon = closeBtn;
+            } else {
+                icon = closeBtn.querySelector("img");
+            }
+            if (!icon) {
+                console.error("No <img> found for close button");
+            } else {
+                icon.src = "/welcome-parent-video-page/assets/images/cancel.png";
+            }
+
             // Update blockers back to normal mode
             setTimeout(() => {
                 this.updateInteractionBlockers();
@@ -428,12 +438,26 @@ export class YouTubePlayer {
 
     private openCustomFullscreen() {
         this.wrapper.classList.add("fullscreen-mode");
-        let orangePlayButton = document.getElementById("orange-close-btn");
-        orangePlayButton.style.left = "93%";
-        const icon = orangePlayButton.querySelector("img");
-        icon.src = "../../assets/images/exit_fullscreen.png";
-        // Update blockers for fullscreen mode (they scale automatically with CSS)
-        // Use a small delay to ensure DOM is updated
+        const orangePlayButton = document.getElementById("orange-close-btn");
+        if (!orangePlayButton) {
+            console.error("#orange-close-btn not found");
+            return;
+        }
+        (orangePlayButton as HTMLElement).style.left = "93%";
+
+        let icon: HTMLImageElement | null = null;
+        if (orangePlayButton instanceof HTMLImageElement) {
+            icon = orangePlayButton;
+        } else {
+            icon = orangePlayButton.querySelector("img");
+        }
+
+        if (!icon) {
+            console.error("No <img> found for orange-close-btn");
+            return;
+        }
+        icon.src = "/welcome-parent-video-page/assets/images/exit_fullscreen.png";
+
         setTimeout(() => {
             this.updateInteractionBlockers();
         }, 100);
