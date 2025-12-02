@@ -3,6 +3,7 @@
 declare global {
     interface Window {
         onYouTubeIframeAPIReady: () => void;
+        onAndroidBackPressed?: () => void;
         YT: typeof YT;
         Android?: {
             postMessage?: (message: string) => void;
@@ -64,6 +65,7 @@ export class YouTubePlayer {
         this.createInteractionBlockers();
         this.setupOverlayClick();
         this.initializeYouTubeAPI();
+        this.setupAndroidBackButton();
         // this.setupCustomPlayButton();
         this.fetchVideoTitle(videoId).then(title => {
             if (title) this.setVideoTitle(title);
@@ -124,7 +126,7 @@ export class YouTubePlayer {
             top: "0",
             left: "0",
             width: "60%", // Covers top-left area where channel name appears
-            height: "20%", // Covers top portion
+            height: "32%", // Covers top portion
         });
 
         // Top right blocker (share buttons area)
@@ -166,7 +168,7 @@ export class YouTubePlayer {
     private createBlocker(className: string, styles: { [key: string]: string }): HTMLElement {
         const blocker = document.createElement("div");
         blocker.className = className;
-        
+
         // Base styles for all blockers
         Object.assign(blocker.style, {
             position: "absolute",
@@ -174,6 +176,7 @@ export class YouTubePlayer {
             backgroundColor: "transparent", // Transparent but captures clicks
             cursor: "default",
             pointerEvents: "auto", // Capture pointer events
+            // border: "2px solid red", // Debug outline to visualize blocker positions
         });
 
         // Apply custom positioning styles
@@ -221,7 +224,8 @@ export class YouTubePlayer {
     private setupOverlayClick() {
         this.overlay.addEventListener("click", () => {
             if (this.player) {
-                // this.enforceOrientationMode("landscape")
+                // Lock content orientation to landscape using CSS (no reload)
+                this.lockContentToLandscape();
                 this.player.seekTo(0);
                 this.player.playVideo();
 
@@ -267,10 +271,12 @@ export class YouTubePlayer {
             console.log("video ended")
             this.overlay.classList.add("show");
         } else if (event.data === YT.PlayerState.PLAYING) {
+            // Lock content orientation to landscape using CSS (no reload)
+            this.lockContentToLandscape();
+
             const iframeEl = document.getElementById('youtube-player');
 
             if (iframeEl && typeof iframeEl.requestFullscreen === 'function') {
-                // this.enforceOrientationMode("landscape");
                 this.openCustomFullscreen();
             }
             this.overlay.classList.remove("show");
@@ -316,37 +322,76 @@ export class YouTubePlayer {
         }
 
         this.closeButton = closeBtn as HTMLElement;
-        
+
         // Set up click handler
         closeBtn.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            this.handleCloseButtonClick();
+            this.handleCloseButtonClick(closeBtn);
         };
     }
 
     /**
      * Handles close button click - closes fullscreen if open, otherwise closes webview
      */
-    private handleCloseButtonClick() {
+    private handleCloseButtonClick(closeBtn: HTMLElement) {
         const isFullscreen = this.wrapper.classList.contains("fullscreen-mode");
 
         if (isFullscreen) {
             // Close fullscreen video
             this.wrapper.classList.remove("fullscreen-mode");
-            this.enforceOrientationMode("portrait");
-            
+            // Unlock content orientation (return to portrait)
+            this.unlockContentOrientation();
+            closeBtn.style.left = "12px";
+            let icon: HTMLImageElement | null = null;
+            if (closeBtn instanceof HTMLImageElement) {
+                icon = closeBtn;
+            } else {
+                icon = closeBtn.querySelector("img");
+            }
+            if (!icon) {
+                console.error("No <img> found for close button");
+            } else {
+                icon.src = "/welcome_parent_video_app/assets/images/cancel.png";
+            }
+
             // Update blockers back to normal mode
             setTimeout(() => {
                 this.updateInteractionBlockers();
             }, 100);
-            
+
             // @ts-ignore
             if (this.player) this.player.pauseVideo();
         } else {
             // Send message to Android app to close webview
             this.sendMessageToAndroid("closeWebView");
         }
+    }
+
+    /**
+     * Sets up Android back button handler
+     * Called by Android when user presses back button
+     */
+    private setupAndroidBackButton() {
+        // Store reference to this instance for the global function
+        const instance = this;
+
+        // Set up global function that Android will call
+        window.onAndroidBackPressed = () => {
+            const isFullscreen = instance.wrapper.classList.contains("fullscreen-mode");
+
+            // If in fullscreen, exit fullscreen mode using handleCloseButtonClick
+            if (isFullscreen) {
+                const closeBtn = document.getElementById("orange-close-btn");
+                if (closeBtn) {
+                    instance.handleCloseButtonClick(closeBtn as HTMLElement);
+                    return true; // Handled the back press
+                }
+            }
+
+            // Not in fullscreen, let Android handle it normally
+            return false;
+        };
     }
 
     /**
@@ -393,21 +438,44 @@ export class YouTubePlayer {
 
     private openCustomFullscreen() {
         this.wrapper.classList.add("fullscreen-mode");
-        
-        // Update blockers for fullscreen mode (they scale automatically with CSS)
-        // Use a small delay to ensure DOM is updated
+        const orangePlayButton = document.getElementById("orange-close-btn");
+        if (!orangePlayButton) {
+            console.error("#orange-close-btn not found");
+            return;
+        }
+        (orangePlayButton as HTMLElement).style.left = "85%";
+
+        let icon: HTMLImageElement | null = null;
+        if (orangePlayButton instanceof HTMLImageElement) {
+            icon = orangePlayButton;
+        } else {
+            icon = orangePlayButton.querySelector("img");
+        }
+
+        if (!icon) {
+            console.error("No <img> found for orange-close-btn");
+            return;
+        }
+        icon.src = "/welcome_parent_video_app/assets/images/exit_fullscreen.png";
+
         setTimeout(() => {
             this.updateInteractionBlockers();
         }, 100);
     }
-    private enforceOrientationMode(type: String) {
-        // Attempt to enforce landscape mode through Android bridge call
-        // @ts-ignore
-        if (window.Android && typeof window.Android.setContainerAppOrientation === "function") {
-            //@ts-ignore
-            window.Android.setContainerAppOrientation(type);
+    /**
+     * Locks the content to landscape orientation using CSS (no page reload)
+     */
+    private lockContentToLandscape() {
+        document.documentElement.classList.add("landscape-locked");
+        document.body.classList.add("landscape-locked");
+    }
 
-        }
+    /**
+     * Unlocks the content orientation (returns to normal/portrait)
+     */
+    private unlockContentOrientation() {
+        document.documentElement.classList.remove("landscape-locked");
+        document.body.classList.remove("landscape-locked");
     }
     // private setupCustomPlayButton() {
     //     const playBtn = document.getElementById("custom-play-btn");

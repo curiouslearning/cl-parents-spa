@@ -1,22 +1,16 @@
-import { YouTubePlayer } from "./YouTubePlayer";
+import { YouTubePlayer } from "./components/YouTubePlayer";
+import { getVideoIdFromUrl } from "./utils/paramUtils";
 
 export class App {
-    constructor() {
 
-    }
-
-    public async initialize() {
-        // document.addEventListener("DOMContentLoaded", () => {
-        //     (window as any).lucide.createIcons(); // render the icons
-        // });
-
+    public initialize() {
         document.addEventListener("DOMContentLoaded", () => {
-            // Initialize YouTube player with the video ID you want to load
-            new YouTubePlayer("GHaclxuG_tQ");
+            const videoId = getVideoIdFromUrl() || "GHaclxuG_tQ"; // fallback
+
+            new YouTubePlayer(videoId);
         });
     }
 }
 
-// Create an instance and initialize
 const app = new App();
 app.initialize();
