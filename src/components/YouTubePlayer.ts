@@ -443,7 +443,7 @@ export class YouTubePlayer {
             console.error("#orange-close-btn not found");
             return;
         }
-        (orangePlayButton as HTMLElement).style.left = "93%";
+        (orangePlayButton as HTMLElement).style.left = "85%";
 
         let icon: HTMLImageElement | null = null;
         if (orangePlayButton instanceof HTMLImageElement) {
